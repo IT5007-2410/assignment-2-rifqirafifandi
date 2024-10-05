@@ -62,35 +62,51 @@ class Add extends React.Component {
   handleSubmit(e) {
     e.preventDefault();
     /*Q4. Fetch the passenger details from the add form and call bookTraveller()*/
+    const form = document.forms.addTraveller;
+    const name = form.travellerName.value;
+    const phone = form.travellerPhone.value;
+    const seat = form.seatSelection.value;
+    const bookingTime = new Date();
+    const ID = this.props.currMaxID + 1;
+    /* Call bookTraveller() */
+    this.props.addBooking({id: ID, name: name, phone: phone, seatNumber: seat, bookingTime: bookingTime});
   }
 
   render() {
     return (
       <form name="addTraveller" onSubmit={this.handleSubmit}>
 	    {/*Q4. Placeholder to enter passenger details. Below code is just an example.*/}
-        <input type="text" name="travellername" placeholder="Name" />
+        <input type="text" name="travellerName" placeholder="Name" /><br></br>
+        <input type="text" name="travellerPhone" placeholder="Phone Number" /><br></br>
+        <input type="text" name="seatSelection" placeholder="Seat Number" /><br></br>
         <button>Add</button>
       </form>
     );
   }
 }
 
-
 class Delete extends React.Component {
   constructor() {
     super();
     this.handleSubmit = this.handleSubmit.bind(this);
   }
+
   handleSubmit(e) {
     e.preventDefault();
     /*Q5. Fetch the passenger details from the deletion form and call deleteTraveller()*/
+    const form = document.forms.deleteTraveller;
+    const name = form.travellerName.value;
+    const phone = form.travellerPhone.value;
+    /* Call deleteTraveller() */
+    this.props.deleteBooking({name: name, phone: Number(phone)});
   }
 
   render() {
     return (
       <form name="deleteTraveller" onSubmit={this.handleSubmit}>
-	    {/*Q5. Placeholder form to enter information on which passenger's ticket needs to be deleted. Below code is just an example.*/}
-	<input type="text" name="travellername" placeholder="Name" />
+      {/*Q5. Placeholder form to enter information on which passenger's ticket needs to be deleted. Below code is just an example.*/}
+        <input type="text" name="travellerName" placeholder="Name" /><br></br>
+        <input type="text" name="travellerPhone" placeholder="Phone Number" /><br></br>
         <button>Delete</button>
       </form>
     );
@@ -99,20 +115,21 @@ class Delete extends React.Component {
 
 class Homepage extends React.Component {
 	constructor() {
-	super();
+	  super();
 	}
 	render(){
-	return (
-	<div>
-		{/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
-	</div>);
+	  return (
+      <div>
+        {/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
+      </div>
+    );
 	}
 }
 
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { travellers: [], selector: 1 };
+    this.state = { travellers: [], selector: 1, maxID: 0 };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
   }
@@ -129,14 +146,34 @@ class TicketToRide extends React.Component {
     setTimeout(() => {
       this.setState({ travellers: initialTravellers });
     }, 500);
+    /* Compute Maximum ID and Update State */
+    let maxID = 0;
+    initialTravellers.forEach((traveller) => {
+      maxID = Math.max(maxID, traveller.id);
+    });
+    this.setState({ maxID: maxID });
   }
 
   bookTraveller(passenger) {
-	    /*Q4. Write code to add a passenger to the traveller state variable.*/
+	  /*Q4. Write code to add a passenger to the traveller state variable.*/
+    const temp = this.state.travellers.slice();
+    const currentMaxID = this.state.maxID;
+    temp.push(passenger);
+    this.setState({travellers: temp});
+    this.setState({maxID: currentMaxID + 1});
   }
 
   deleteTraveller(passenger) {
 	  /*Q5. Write code to delete a passenger from the traveller state variable.*/
+    const temp = this.state.travellers.slice();
+    /* Look for the passenger to delete */
+    for (let i = 0; i < temp.length; i++) {
+      if (temp[i].name === passenger.name && temp[i].phone === passenger.phone) {
+        temp.splice(i, 1);
+        break;
+      }
+    }
+    this.setState({travellers: temp});
   }
 
   render() {
@@ -149,10 +186,17 @@ class TicketToRide extends React.Component {
         <div>
           {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
           {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
+          
           {/*Q3. Code to call component that Displays Travellers.*/}
           <Display travellersProp={this.state.travellers} />
+
           {/*Q4. Code to call the component that adds a traveller.*/}
+          <h2>Add a Traveller</h2> {/*Debug*/}
+          <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/>
+
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
+          <h2>Delete a Traveller</h2> {/*Debug*/}
+          <Delete deleteBooking={this.deleteTraveller} />
         </div>
       </div>
     );
