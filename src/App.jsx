@@ -70,6 +70,10 @@ class Add extends React.Component {
     const ID = this.props.currMaxID + 1;
     /* Call bookTraveller() */
     this.props.addBooking({id: ID, name: name, phone: phone, seatNumber: seat, bookingTime: bookingTime});
+    /* Clear the form */
+    form.travellerName.value = '';
+    form.travellerPhone.value = '';
+    form.seatSelection.value = '';
   }
 
   render() {
@@ -99,6 +103,9 @@ class Delete extends React.Component {
     const phone = form.travellerPhone.value;
     /* Call deleteTraveller() */
     this.props.deleteBooking({name: name, phone: Number(phone)});
+    /* Clear the form */
+    form.travellerName.value = '';
+    form.travellerPhone.value = '';
   }
 
   render() {
@@ -129,7 +136,7 @@ class Homepage extends React.Component {
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { travellers: [], selector: 1, maxID: 0 };
+    this.state = { travellers: [], selector: 1, maxID: 0, deleteError: false, peopleInTrain: 0 };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
   }
@@ -146,12 +153,26 @@ class TicketToRide extends React.Component {
     setTimeout(() => {
       this.setState({ travellers: initialTravellers });
     }, 500);
+
     /* Compute Maximum ID and Update State */
     let maxID = 0;
     initialTravellers.forEach((traveller) => {
       maxID = Math.max(maxID, traveller.id);
     });
     this.setState({ maxID: maxID });
+    
+    /* Compute People in Train */
+    let peopleInTrain = 0;
+    initialTravellers.forEach((traveller) => {
+      peopleInTrain++;
+    });
+    this.setState({ peopleInTrain: peopleInTrain });
+  }
+
+  releaseDeleteError() {
+    setTimeout(() => {
+      this.setState({deleteError: false});
+    }, 2000);
   }
 
   bookTraveller(passenger) {
@@ -166,14 +187,23 @@ class TicketToRide extends React.Component {
   deleteTraveller(passenger) {
 	  /*Q5. Write code to delete a passenger from the traveller state variable.*/
     const temp = this.state.travellers.slice();
+    var isFound = false;
     /* Look for the passenger to delete */
     for (let i = 0; i < temp.length; i++) {
       if (temp[i].name === passenger.name && temp[i].phone === passenger.phone) {
+        isFound = true;
         temp.splice(i, 1);
         break;
       }
     }
-    this.setState({travellers: temp});
+    if (!isFound) {
+      this.setState({deleteError: true});
+      this.releaseDeleteError();
+    }
+    else {
+      this.setState({travellers: temp});
+      this.setState({deleteError: false});
+    }
   }
 
   render() {
@@ -197,6 +227,7 @@ class TicketToRide extends React.Component {
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
           <h2>Delete a Traveller</h2> {/*Debug*/}
           <Delete deleteBooking={this.deleteTraveller} />
+          {this.state.deleteError ? <p>Passenger Not Found</p> : null}
         </div>
       </div>
     );
