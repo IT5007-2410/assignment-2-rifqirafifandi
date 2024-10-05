@@ -1,21 +1,26 @@
 /*Q1. JS Variable needs to be created here. Below variable is just an example. Try to add more attributes.*/
 const initialTravellers = [
   {
-    id: 1, name: 'Jack', phone: 88885555,
-    bookingTime: new Date(),
+    id: 1, name: 'Jack', phone: 88885555, seatNumber: 1,
+    bookingTime: new Date()
   },
   {
-    id: 2, name: 'Rose', phone: 88884444,
-    bookingTime: new Date(),
+    id: 2, name: 'Rose', phone: 88884444, seatNumber: 2,
+    bookingTime: new Date()
   },
 ];
 
-
 function TravellerRow(props) {
   {/*Q3. Placeholder to initialize local variable based on traveller prop.*/}
+  const traveller = props.traveller;
   return (
     <tr>
 	  {/*Q3. Placeholder for rendering one row of a table with required traveller attribute values.*/}
+      <td>{traveller.id}</td>
+      <td>{traveller.name}</td>
+      <td>{traveller.phone}</td>
+      <td>{traveller.seatNumber}</td>
+      <td>{traveller.bookingTime.toString()}</td>
     </tr>
   );
 }
@@ -23,20 +28,26 @@ function TravellerRow(props) {
 function Display(props) {
   
 	/*Q3. Write code to render rows of table, reach corresponding to one traveller. Make use of the TravellerRow function that draws one row.*/
+  const travellers = props.travellersProp;
+  const travellerRows = travellers.map(traveller => <TravellerRow key={traveller.id} traveller={traveller} />);
+  // debug
+  console.log(travellerRows);
 
   return (
     <table className="bordered-table">
       <thead>
         <tr>
-	  {/*Q3. Below table is just an example. Add more columns based on the traveller attributes you choose.*/}
+	        {/*Q3. Below table is just an example. Add more columns based on the traveller attributes you choose.*/}
           <th>ID</th>
           <th>Name</th>
           <th>Phone</th>
+          <th>Seat Number</th>
           <th>Booking Time</th>
         </tr>
       </thead>
       <tbody>
         {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
+        {travellerRows}
       </tbody>
     </table>
   );
@@ -97,18 +108,19 @@ class Homepage extends React.Component {
 	</div>);
 	}
 }
+
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { travellers: [], selector: 1};
+    this.state = { travellers: [], selector: 1 };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
   }
 
-  setSelector(value)
-  {
+  setSelector(value) {
   	/*Q2. Function to set the value of component selector variable based on user's button click.*/
   }
+
   componentDidMount() {
     this.loadData();
   }
@@ -126,21 +138,22 @@ class TicketToRide extends React.Component {
   deleteTraveller(passenger) {
 	  /*Q5. Write code to delete a passenger from the traveller state variable.*/
   }
+
   render() {
     return (
       <div>
         <h1>Ticket To Ride</h1>
-	<div>
-	    {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
-	</div>
-	<div>
-		{/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
-		{/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
-		{/*Q3. Code to call component that Displays Travellers.*/}
-		
-		{/*Q4. Code to call the component that adds a traveller.*/}
-		{/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
-	</div>
+        <div>
+          {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
+        </div>
+        <div>
+          {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
+          {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
+          {/*Q3. Code to call component that Displays Travellers.*/}
+          <Display travellersProp={this.state.travellers} />
+          {/*Q4. Code to call the component that adds a traveller.*/}
+          {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
+        </div>
       </div>
     );
   }
