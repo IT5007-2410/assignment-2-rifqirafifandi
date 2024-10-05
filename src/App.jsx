@@ -146,12 +146,13 @@ class TicketToRide extends React.Component {
     this.state = { 
       travellers: [], 
       selector: 1, 
-      maxID: 0, 
+      maxID: 0,
+      addError: false, 
       deleteError: false, 
       isTrainFull: false,
       emptySeats: this.maxPassengers,
       /* Assume 10 seats in a row, seats defined properly at booking time, no duplicates */
-      availableSeats: Array(10).fill(true), // For Q6
+      availableSeats: Array(this.maxPassengers).fill(true), // For Q6
     };
   }
 
@@ -199,11 +200,24 @@ class TicketToRide extends React.Component {
     }, 2000);
   }
 
+  releaseAddError() {
+    setTimeout(() => {
+      this.setState({addError: false});
+    }, 2000);
+  }
+
   bookTraveller(passenger) {
 	  /*Q4. Write code to add a passenger to the traveller state variable.*/
     const temp = this.state.travellers.slice();
     const currentMaxID = this.state.maxID;
     const tempAvailableSeats = this.state.availableSeats.slice();
+    /* Check if the seat is already taken */
+    if (!tempAvailableSeats[passenger.seatNumber - 1] || passenger.seatNumber < 1 || passenger.seatNumber > this.maxPassengers) {
+      this.setState({addError: true});
+      this.releaseAddError();
+      return;
+    }
+
     tempAvailableSeats[passenger.seatNumber - 1] = false;
     temp.push(passenger);
     this.setState({travellers: temp, maxID: currentMaxID + 1, emptySeats: this.maxPassengers - temp.length, availableSeats: tempAvailableSeats});
@@ -266,6 +280,7 @@ class TicketToRide extends React.Component {
           {this.state.selector==3 ? <h2>Add a Traveller</h2> : null} {/*Debug*/}
           {!this.state.isTrainFull && this.state.selector==3 ? <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/> : null}
           {this.state.isTrainFull && this.state.selector==3 ? <p>Train is Full</p> : null}
+          {this.state.addError && this.state.selector==3 ? <p>Invalid Seat Number</p> : null}
 
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
           {this.state.selector==4 ? <h2>Delete a Traveller</h2> : null} {/*Debug*/}
