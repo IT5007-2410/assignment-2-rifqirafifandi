@@ -126,6 +126,7 @@ class Homepage extends React.Component {
 	  return (
       <div>
         {/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
+        <h2>Homepage</h2>
       </div>
     );
 	}
@@ -136,15 +137,14 @@ class TicketToRide extends React.Component {
     super();
     this.state = { 
       travellers: [], 
-      selector: 0, 
+      selector: 1, 
       maxID: 0, 
       deleteError: false, 
-      peopleInTrain: 0, 
       isTrainFull: false,
     };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
-    this.maxPassengers = 5;
+    this.maxPassengers = 10;
   }
 
   setSelector(value) {
@@ -154,10 +154,13 @@ class TicketToRide extends React.Component {
         this.setState({selector: 1}); /* Display Travellers */
         break;
       case 2:
-        this.setState({selector: 2}); /* Add Traveller */
+        this.setState({selector: 2}); /* Display Travellers */
         break;
       case 3:
-        this.setState({selector: 3}); /* Delete Traveller */
+        this.setState({selector: 3}); /* Add Traveller */
+        break;
+      case 4:
+        this.setState({selector: 4}); /* Delete Traveller */
         break;
     }
   }
@@ -173,11 +176,10 @@ class TicketToRide extends React.Component {
 
     /* Compute Maximum ID and Update State */
     let maxID = 0;
-    let peopleInTrain = initialTravellers.length;
     initialTravellers.forEach((traveller) => {
       maxID = Math.max(maxID, traveller.id);
     });
-    this.setState({ maxID: maxID, peopleInTrain: peopleInTrain });
+    this.setState({ maxID: maxID });
   }
 
   releaseDeleteError() {
@@ -190,9 +192,8 @@ class TicketToRide extends React.Component {
 	  /*Q4. Write code to add a passenger to the traveller state variable.*/
     const temp = this.state.travellers.slice();
     const currentMaxID = this.state.maxID;
-    const peopleInTrain = this.state.peopleInTrain;
     temp.push(passenger);
-    this.setState({travellers: temp, maxID: currentMaxID + 1, peopleInTrain: peopleInTrain + 1});
+    this.setState({travellers: temp, maxID: currentMaxID + 1});
     /* Check if the train is full */
     if (temp.length === this.maxPassengers) {
       this.setState({isTrainFull: true});
@@ -204,7 +205,6 @@ class TicketToRide extends React.Component {
 
   deleteTraveller(passenger) {
 	  /*Q5. Write code to delete a passenger from the traveller state variable.*/
-    const peopleInTrain = this.state.peopleInTrain;
     const temp = this.state.travellers.slice();
     var isFound = false;
     /* Look for the passenger to delete */
@@ -220,7 +220,7 @@ class TicketToRide extends React.Component {
       this.releaseDeleteError();
     }
     else {
-      this.setState({travellers: temp, deleteError: false, peopleInTrain: peopleInTrain - 1, isTrainFull: false});
+      this.setState({travellers: temp, deleteError: false, isTrainFull: false});
     }
   }
 
@@ -232,27 +232,28 @@ class TicketToRide extends React.Component {
           {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
           <nav>
             <ul>
-              <li><a href="#" onClick={() => this.setSelector(1)}>Display Travellers</a></li>
-              <li><a href="#" onClick={() => this.setSelector(2)}>Add Traveller</a></li>
-              <li><a href="#" onClick={() => this.setSelector(3)}>Delete Traveller</a></li>
+              <li><a href="#" onClick={() => this.setSelector(2)}>Display Travellers</a></li>
+              <li><a href="#" onClick={() => this.setSelector(3)}>Add Traveller</a></li>
+              <li><a href="#" onClick={() => this.setSelector(4)}>Delete Traveller</a></li>
             </ul>
           </nav>
         </div>
         <div>
           {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
           {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
-          
+          {this.state.selector==1 ? <Homepage/> : null}
+
           {/*Q3. Code to call component that Displays Travellers.*/}
-          {this.state.selector==1 ? <Display travellersProp={this.state.travellers} /> : null}
+          {this.state.selector==2 ? <Display travellersProp={this.state.travellers} /> : null}
 
           {/*Q4. Code to call the component that adds a traveller.*/}
-          {this.state.selector==2 ? <h2>Add a Traveller</h2> : null} {/*Debug*/}
-          {!this.state.isTrainFull && this.state.selector==2 ? <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/> : null}
-          {this.state.isTrainFull ? <p>Train is Full</p> : null}
+          {this.state.selector==3 ? <h2>Add a Traveller</h2> : null} {/*Debug*/}
+          {!this.state.isTrainFull && this.state.selector==3 ? <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/> : null}
+          {this.state.isTrainFull && this.state.selector==3 ? <p>Train is Full</p> : null}
 
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
-          {this.state.selector==3 ? <h2>Delete a Traveller</h2> : null} {/*Debug*/}
-          {this.state.selector==3 ?<Delete deleteBooking={this.deleteTraveller} /> : null}
+          {this.state.selector==4 ? <h2>Delete a Traveller</h2> : null} {/*Debug*/}
+          {this.state.selector==4 ?<Delete deleteBooking={this.deleteTraveller} /> : null}
           {this.state.deleteError ? <p>Passenger Not Found</p> : null}
         </div>
       </div>
