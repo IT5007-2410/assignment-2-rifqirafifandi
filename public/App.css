@@ -1,0 +1,7 @@
+.seat-available {
+  background-color: #90EE90;
+}
+
+.seat-unavailable {
+  background-color: #FF6347;
+}
