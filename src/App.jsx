@@ -30,8 +30,6 @@ function Display(props) {
 	/*Q3. Write code to render rows of table, reach corresponding to one traveller. Make use of the TravellerRow function that draws one row.*/
   const travellers = props.travellersProp;
   const travellerRows = travellers.map(traveller => <TravellerRow key={traveller.id} traveller={traveller} />);
-  // debug
-  console.log(travellerRows);
 
   return (
     <table className="bordered-table">
@@ -69,7 +67,7 @@ class Add extends React.Component {
     const bookingTime = new Date();
     const ID = this.props.currMaxID + 1;
     /* Call bookTraveller() */
-    this.props.addBooking({id: ID, name: name, phone: phone, seatNumber: seat, bookingTime: bookingTime});
+    this.props.addBooking({id: ID, name: name, phone: Number(phone), seatNumber: seat, bookingTime: bookingTime});
     /* Clear the form */
     form.travellerName.value = '';
     form.travellerPhone.value = '';
@@ -136,13 +134,32 @@ class Homepage extends React.Component {
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { travellers: [], selector: 1, maxID: 0, deleteError: false, peopleInTrain: 0 };
+    this.state = { 
+      travellers: [], 
+      selector: 0, 
+      maxID: 0, 
+      deleteError: false, 
+      peopleInTrain: 0, 
+      isTrainFull: false,
+    };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
+    this.maxPassengers = 5;
   }
 
   setSelector(value) {
   	/*Q2. Function to set the value of component selector variable based on user's button click.*/
+    switch (value) {
+      case 1:
+        this.setState({selector: 1}); /* Display Travellers */
+        break;
+      case 2:
+        this.setState({selector: 2}); /* Add Traveller */
+        break;
+      case 3:
+        this.setState({selector: 3}); /* Delete Traveller */
+        break;
+    }
   }
 
   componentDidMount() {
@@ -156,17 +173,11 @@ class TicketToRide extends React.Component {
 
     /* Compute Maximum ID and Update State */
     let maxID = 0;
+    let peopleInTrain = initialTravellers.length;
     initialTravellers.forEach((traveller) => {
       maxID = Math.max(maxID, traveller.id);
     });
-    this.setState({ maxID: maxID });
-    
-    /* Compute People in Train */
-    let peopleInTrain = 0;
-    initialTravellers.forEach((traveller) => {
-      peopleInTrain++;
-    });
-    this.setState({ peopleInTrain: peopleInTrain });
+    this.setState({ maxID: maxID, peopleInTrain: peopleInTrain });
   }
 
   releaseDeleteError() {
@@ -179,13 +190,21 @@ class TicketToRide extends React.Component {
 	  /*Q4. Write code to add a passenger to the traveller state variable.*/
     const temp = this.state.travellers.slice();
     const currentMaxID = this.state.maxID;
+    const peopleInTrain = this.state.peopleInTrain;
     temp.push(passenger);
-    this.setState({travellers: temp});
-    this.setState({maxID: currentMaxID + 1});
+    this.setState({travellers: temp, maxID: currentMaxID + 1, peopleInTrain: peopleInTrain + 1});
+    /* Check if the train is full */
+    if (temp.length === this.maxPassengers) {
+      this.setState({isTrainFull: true});
+    }
+    else {
+      this.setState({isTrainFull: false});
+    }
   }
 
   deleteTraveller(passenger) {
 	  /*Q5. Write code to delete a passenger from the traveller state variable.*/
+    const peopleInTrain = this.state.peopleInTrain;
     const temp = this.state.travellers.slice();
     var isFound = false;
     /* Look for the passenger to delete */
@@ -201,8 +220,7 @@ class TicketToRide extends React.Component {
       this.releaseDeleteError();
     }
     else {
-      this.setState({travellers: temp});
-      this.setState({deleteError: false});
+      this.setState({travellers: temp, deleteError: false, peopleInTrain: peopleInTrain - 1, isTrainFull: false});
     }
   }
 
@@ -212,21 +230,29 @@ class TicketToRide extends React.Component {
         <h1>Ticket To Ride</h1>
         <div>
           {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
+          <nav>
+            <ul>
+              <li><a href="#" onClick={() => this.setSelector(1)}>Display Travellers</a></li>
+              <li><a href="#" onClick={() => this.setSelector(2)}>Add Traveller</a></li>
+              <li><a href="#" onClick={() => this.setSelector(3)}>Delete Traveller</a></li>
+            </ul>
+          </nav>
         </div>
         <div>
           {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
           {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
           
           {/*Q3. Code to call component that Displays Travellers.*/}
-          <Display travellersProp={this.state.travellers} />
+          {this.state.selector==1 ? <Display travellersProp={this.state.travellers} /> : null}
 
           {/*Q4. Code to call the component that adds a traveller.*/}
-          <h2>Add a Traveller</h2> {/*Debug*/}
-          <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/>
+          {this.state.selector==2 ? <h2>Add a Traveller</h2> : null} {/*Debug*/}
+          {!this.state.isTrainFull && this.state.selector==2 ? <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/> : null}
+          {this.state.isTrainFull ? <p>Train is Full</p> : null}
 
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
-          <h2>Delete a Traveller</h2> {/*Debug*/}
-          <Delete deleteBooking={this.deleteTraveller} />
+          {this.state.selector==3 ? <h2>Delete a Traveller</h2> : null} {/*Debug*/}
+          {this.state.selector==3 ?<Delete deleteBooking={this.deleteTraveller} /> : null}
           {this.state.deleteError ? <p>Passenger Not Found</p> : null}
         </div>
       </div>
