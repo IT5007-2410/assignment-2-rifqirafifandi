@@ -75,7 +75,7 @@ class Add extends React.Component {
 
   render() {
     return (
-      <form name="addTraveller" onSubmit={this.handleSubmit}>
+      <form name="addTraveller" className="form-container" onSubmit={this.handleSubmit}>
 	    {/*Q4. Placeholder to enter passenger details. Below code is just an example.*/}
         <input type="text" name="travellerName" placeholder="Name" /><br></br>
         <input type="text" name="travellerPhone" placeholder="Phone Number" /><br></br>
@@ -107,7 +107,7 @@ class Delete extends React.Component {
 
   render() {
     return (
-      <form name="deleteTraveller" onSubmit={this.handleSubmit}>
+      <form name="deleteTraveller" className="form-container" onSubmit={this.handleSubmit}>
       {/*Q5. Placeholder form to enter information on which passenger's ticket needs to be deleted. Below code is just an example.*/}
         <input type="text" name="travellerName" placeholder="Name" /><br></br>
         <input type="text" name="travellerPhone" placeholder="Phone Number" /><br></br>
@@ -126,7 +126,7 @@ class Homepage extends React.Component {
 	  return (
       <div>
         {/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
-        <h2>Homepage</h2>
+        <h2>Available Seats</h2>
         <div className="seat-assignment-group">
           {/* Placeholder for button objects */}
           {buttonRows}
@@ -180,18 +180,17 @@ class TicketToRide extends React.Component {
 
   loadData() {
     setTimeout(() => {
-      this.setState({ travellers: initialTravellers});
-    }, 500);
+      this.setState({ travellers: initialTravellers, emptySeats: this.maxPassengers - initialTravellers.length });
+    }, 10);
 
     /* Compute Maximum ID, Empty Seats, and Update State */
     let maxID = 0;
-    let initialPassengers = this.state.travellers.length;
     const tempAvailableSeats = this.state.availableSeats.slice();
     initialTravellers.forEach((traveller) => {
       maxID = Math.max(maxID, traveller.id);
       tempAvailableSeats[traveller.seatNumber - 1] = false;
     });
-    this.setState({ maxID: maxID, emptySeats: this.maxPassengers - initialPassengers, availableSeats: tempAvailableSeats});
+    this.setState({ maxID: maxID, availableSeats: tempAvailableSeats});
   }
 
   releaseDeleteError() {
@@ -211,8 +210,8 @@ class TicketToRide extends React.Component {
     const temp = this.state.travellers.slice();
     const currentMaxID = this.state.maxID;
     const tempAvailableSeats = this.state.availableSeats.slice();
-    /* Check if the seat is already taken */
-    if (!tempAvailableSeats[passenger.seatNumber - 1] || passenger.seatNumber < 1 || passenger.seatNumber > this.maxPassengers) {
+    /* Check if the seat is already taken and name and phone nonempty */
+    if (!tempAvailableSeats[passenger.seatNumber - 1] || passenger.seatNumber < 1 || passenger.seatNumber > this.maxPassengers || passenger.name === '' || passenger.phone === '') {
       this.setState({addError: true});
       this.releaseAddError();
       return;
@@ -261,10 +260,10 @@ class TicketToRide extends React.Component {
           {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
           <nav>
             <ul>
-              <li><a href="#" onClick={() => this.setSelector(1)}>Homepage</a></li>
-              <li><a href="#" onClick={() => this.setSelector(2)}>Display Travellers</a></li>
-              <li><a href="#" onClick={() => this.setSelector(3)}>Add Traveller</a></li>
-              <li><a href="#" onClick={() => this.setSelector(4)}>Delete Traveller</a></li>
+              <li><a href="#" onClick={() => this.setSelector(1)} style={{backgroundColor: this.state.selector==1 ? "green" : "#333" }}>Homepage</a></li>
+              <li><a href="#" onClick={() => this.setSelector(2)} style={{backgroundColor: this.state.selector==2 ? "green" : "#333" }}>Display Travellers</a></li>
+              <li><a href="#" onClick={() => this.setSelector(3)} style={{backgroundColor: this.state.selector==3 ? "green" : "#333" }}>Add Traveller</a></li>
+              <li><a href="#" onClick={() => this.setSelector(4)} style={{backgroundColor: this.state.selector==4 ? "green" : "#333" }}>Delete Traveller</a></li>
             </ul>
           </nav>
         </div>
@@ -277,15 +276,13 @@ class TicketToRide extends React.Component {
           {this.state.selector==2 ? <Display travellersProp={this.state.travellers} /> : null}
 
           {/*Q4. Code to call the component that adds a traveller.*/}
-          {this.state.selector==3 ? <h2>Add a Traveller</h2> : null} {/*Debug*/}
           {!this.state.isTrainFull && this.state.selector==3 ? <Add addBooking={this.bookTraveller} currMaxID={this.state.maxID}/> : null}
           {this.state.isTrainFull && this.state.selector==3 ? <p>Train is Full</p> : null}
-          {this.state.addError && this.state.selector==3 ? <p>Invalid Seat Number</p> : null}
+          {this.state.addError && this.state.selector==3 ? <p style={{ color: "red" }}>Invalid Input</p> : null}
 
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
-          {this.state.selector==4 ? <h2>Delete a Traveller</h2> : null} {/*Debug*/}
           {this.state.selector==4 ?<Delete deleteBooking={this.deleteTraveller} /> : null}
-          {this.state.deleteError ? <p>Passenger Not Found</p> : null}
+          {this.state.deleteError ? <p style={{ color: "red" }}>Passenger Not Found</p> : null}
         </div>
       </div>
     );
